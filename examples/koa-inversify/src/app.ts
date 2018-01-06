@@ -1,10 +1,11 @@
-import registerApi from './api';
-import * as bodyParser from 'body-parser';
-import * as express from 'express';
-import * as promiseRouter from 'express-promise-router';
 import * as Knex from 'knex';
-import * as morgan from 'morgan';
+import * as Koa from 'koa';
+import * as logger from 'koa-morgan';
+import * as bodyparser from 'koa-bodyparser';
+import * as Router from 'koa-router';
+import * as json from 'koa-json';
 import {Model} from 'objection';
+import registerApi from './api';
 
 const knexConfig = require('../knexfile');
 // Initialize knex.
@@ -18,26 +19,30 @@ knex.migrate.latest();
 // the Model.bindKnex method.
 Model.knex(knex);
 
-const router = promiseRouter();
-const app = express()
-  .use(bodyParser.json())
-  .use(morgan('dev'))
-  .use(router)
-  .set('json spaces', 2);
+// Error handling. The `ValidationError` instances thrown by objection.js have a `statusCode`
+// property that is sent as the status code of the response.
+async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>) {
+  try {
+    await next();
+  } catch (err) {
+    ctx.status = err.statusCode || err.status || 500;
+    ctx.body = err.data || err.message || {};
+    ctx.app.emit('error', err, ctx);
+  }
+}
+
+const router = new Router();
+
+const app = new Koa()
+  .use(json({ pretty: true }))
+  .use(errorHandler)
+  .use(logger('dev'))
+  .use(bodyparser())
+  .use(router.routes());
 
 // Register our REST API.
 registerApi(router);
 
-// Error handling. The `ValidationError` instances thrown by objection.js have a `statusCode`
-// property that is sent as the status code of the response.
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (err) {
-    res.status(err.statusCode || err.status || 500).send(err.data || err.message || {});
-  } else {
-    next();
-  }
-});
-
-const server = app.listen(8641, function() {
+const server = app.listen(8641, () => {
   console.log('Example app listening at port %s', server.address().port);
 });

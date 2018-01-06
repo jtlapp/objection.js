@@ -109,7 +109,7 @@ export default (router: Router) => {
       throw createStatusCodeError(404);
     }
 
-    const pet = await person.$relatedQuery('pets').insert(ctx.body);
+    const pet = await person.$relatedQuery('pets').insert(ctx.request.body);
 
     ctx.body = pet;
   });
