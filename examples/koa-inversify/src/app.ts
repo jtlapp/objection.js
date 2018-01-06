@@ -4,7 +4,7 @@ import * as logger from 'koa-morgan';
 import * as bodyparser from 'koa-bodyparser';
 import * as Router from 'koa-router';
 import * as json from 'koa-json';
-import {Model} from 'objection';
+import {Model, ValidationError} from 'objection';
 import registerApi from './api';
 
 const knexConfig = require('../knexfile');
@@ -26,10 +26,13 @@ async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>
     await next();
   } catch (err) {
     ctx.status = err.statusCode || err.status || 500;
-    ctx.body = {
-      message: err.message || 'An error occurred.'
-    },
-    ctx.app.emit('error', err, ctx);
+    if (err instanceof ValidationError) {
+      ctx.body = {message: 'Invalid request parameter(s)', data: err.data};
+    } else if (ctx.status === 500) {
+      ctx.app.emit('error', err, ctx);
+    } else {
+      ctx.body = {message: err.message || 'An error occurred'};
+    }
   }
 }
 
