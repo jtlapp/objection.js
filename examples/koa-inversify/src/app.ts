@@ -26,7 +26,9 @@ async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>
     await next();
   } catch (err) {
     ctx.status = err.statusCode || err.status || 500;
-    ctx.body = err.data || err.message || {};
+    ctx.body = {
+      message: err.message || 'An error occurred.'
+    },
     ctx.app.emit('error', err, ctx);
   }
 }
