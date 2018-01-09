@@ -5,10 +5,12 @@ import {Model, ModelRepo} from './modelrepo';
 
 export interface MovieInfo {
   name: string;
-  actors: Person[];
 }
 
-export interface Movie extends RepoObject, MovieInfo {}
+export interface Movie extends RepoObject, MovieInfo {
+  // Optional eager relations.
+  actors?: Person[];
+}
 
 export interface MovieRepo extends Repo<Movie> {
   // TBD
@@ -16,7 +18,9 @@ export interface MovieRepo extends Repo<Movie> {
 
 export class MovieModel extends Model implements MovieInfo {
   name: string;
-  actors: PersonModel[];
+
+  // Optional eager relations.
+  actors?: PersonModel[];
 
   // Table name is the only required property.
   static tableName = 'Movie';

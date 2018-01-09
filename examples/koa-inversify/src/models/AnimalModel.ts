@@ -5,21 +5,27 @@ import {Repo, RepoObject} from './repo';
 import {Model, ModelRepo} from './modelrepo';
 
 export interface AnimalInfo {
-  owner: Person;
+  ownerId: number | null;
   name: string;
   species: string;
 }
 
-export interface Animal extends RepoObject, AnimalInfo {}
+export interface Animal extends RepoObject, AnimalInfo {
+  // Optional eager relations.
+  owner?: Person;
+}
 
 export interface AnimalRepo extends Repo<Animal> {
   // TBD
 }
 
 export class AnimalModel extends Model implements AnimalInfo {
-  owner: PersonModel;
+  ownerId: number | null;
   name: string;
   species: string;
+
+  // Optional eager relations.
+  owner?: PersonModel;
 
   // Table name is the only required property.
   static tableName = 'Animal';

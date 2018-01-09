@@ -1,9 +1,11 @@
 import * as Objection from 'objection';
 import {StampedRepo, StampedRepoObject, ObjectNotFoundError} from './repo';
 import {StampedModel, StampedModelRepo} from './modelrepo';
+import {Animal, AnimalModel} from './AnimalModel';
+import {Movie, MovieModel} from './MovieModel';
 
 export interface PersonInfo {
-  parentId: number|null;
+  parentId: number | null;
   firstName: string;
   lastName: string;
   age: number;
@@ -17,19 +19,28 @@ export interface Address {
 }
 
 export interface Person extends StampedRepoObject, PersonInfo {
-  parent: Person;
+  // Optional eager relations.
+  parent?: Person;
+  children?: Person[];
+  pets?: Animal[];
+  movies?: Movie[];
 }
 export interface PersonRepo extends StampedRepo<Person> {
   // TBD
 }
 
 export class PersonModel extends StampedModel implements PersonInfo {
-  parentId: number|null;
+  parentId: number | null;
   firstName: string;
   lastName: string;
   age: number;
   address: Address;
-  parent: PersonModel;
+
+  // Optional eager relations.
+  parent?: PersonModel;
+  children?: PersonModel[];
+  pets?: AnimalModel[];
+  movies?: MovieModel[];
 
   // Table name is the only required property.
   static tableName = 'Person';
@@ -71,7 +82,7 @@ export class PersonModel extends StampedModel implements PersonInfo {
       relation: Objection.Model.HasManyRelation,
       // This model defines the `modelPaths` property. Therefore we can simply use
       // the model module names in `modelClass`.
-      modelClass: 'AnimalModel',
+      modelClass: AnimalModel,
       join: {
         from: 'Person.id',
         to: 'Animal.ownerId'
@@ -80,7 +91,7 @@ export class PersonModel extends StampedModel implements PersonInfo {
 
     movies: {
       relation: Objection.Model.ManyToManyRelation,
-      modelClass: 'MovieModel',
+      modelClass: MovieModel,
       join: {
         from: 'Person.id',
         // ManyToMany relation needs the `through` object to describe the join table.
@@ -112,6 +123,8 @@ export class PersonModel extends StampedModel implements PersonInfo {
   };
 }
 
+export type MyFunc = ((person?: PersonModel) => Promise<PersonModel | PersonModel[]>);
+
 export class PersonModelRepo extends StampedModelRepo<PersonModel>
   implements PersonRepo
 {
@@ -120,15 +133,21 @@ export class PersonModelRepo extends StampedModelRepo<PersonModel>
     return this.Model.fromJson(personInfo);
   }
 
-  addChildren(personID: number, children: /*TBD*/any) {
+  addChildren(personID: number, children: PersonInfo | PersonInfo[])
+  {
     return this.Model.query().findById(personID)
       .then(person => {
 
         if (!person) {
           throw new ObjectNotFoundError('person', personID);
         }
-        //return person.$relatedQuery('children').insert(children);
-        return person.$relatedQuery('children').insert(children);
+        let result: Promise<PersonModel | PersonModel[]>;
+        if (Array.isArray(children)) { // just to satisfy static typing
+          result = person.$relatedQuery<PersonModel>('children').insert(<PersonModel[]>children);
+        } else {
+          result = person.$relatedQuery<PersonModel>('children').insert(<PersonModel>children);
+        }
+        return result;
       });
   }
 
