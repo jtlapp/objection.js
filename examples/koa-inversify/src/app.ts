@@ -4,20 +4,20 @@ import * as logger from 'koa-morgan';
 import * as bodyparser from 'koa-bodyparser';
 import * as Router from 'koa-router';
 import * as json from 'koa-json';
-import {Model, ValidationError} from 'objection';
-import registerApi from './api';
+import {ModelClass, ValidationError} from 'objection';
+import {PersonModel, PersonModelRepo} from './models/PersonModel';
+import {MovieModel, MovieModelRepo} from './models/MovieModel';
+import {AnimalModel, AnimalModelRepo} from './models/AnimalModel';
+import * as api from './api';
 
 const knexConfig = require('../knexfile');
-// Initialize knex.
-export const knex = Knex(knexConfig.development);
+const knex = Knex(knexConfig.development);
+const personModelRepo = new PersonModelRepo(PersonModel as ModelClass<PersonModel>, knex);
+const movieModelRepo = new MovieModelRepo(MovieModel as ModelClass<MovieModel>, knex);
+const animalModelRepo = new AnimalModelRepo(AnimalModel as ModelClass<AnimalModel>, knex);
 
 // Create or migrate:
 knex.migrate.latest();
-
-// Bind all Models to a knex instance. If you only have one database in
-// your server this is all you have to do. For multi database systems, see
-// the Model.bindKnex method.
-Model.knex(knex);
 
 // Error handling. The `ValidationError` instances thrown by objection.js have a `statusCode`
 // property that is sent as the status code of the response.
@@ -39,14 +39,16 @@ async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>
 const router = new Router();
 
 const app = new Koa()
-  .use(json({ pretty: true }))
+  .use(json({pretty: true}))
   .use(errorHandler)
   .use(logger('dev'))
   .use(bodyparser())
   .use(router.routes());
 
 // Register our REST API.
-registerApi(router);
+api.registerPersonAPI(router, personModelRepo);
+api.registerMovieAPI(router, movieModelRepo);
+api.registerAnimalAPI(router, animalModelRepo);
 
 const server = app.listen(8641, () => {
   console.log('Example app listening at port %s', server.address().port);

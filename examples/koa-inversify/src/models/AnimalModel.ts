@@ -1,10 +1,23 @@
-import {Model} from 'objection';
-import Person from './Person';
+import * as Objection from 'objection';
+import {Person, PersonModel} from './PersonModel';
 import {join} from 'path';
+import {Repo, RepoObject} from './repo';
+import {Model, ModelRepo} from './modelrepo';
 
-export default class Animal extends Model {
-  readonly id: number;
+export interface AnimalInfo {
   owner: Person;
+  name: string;
+  species: string;
+}
+
+export interface Animal extends RepoObject, AnimalInfo {}
+
+export interface AnimalRepo extends Repo<Animal> {
+  // TBD
+}
+
+export class AnimalModel extends Model implements AnimalInfo {
+  owner: PersonModel;
   name: string;
   species: string;
 
@@ -29,11 +42,11 @@ export default class Animal extends Model {
   // This object defines the relations to other models.
   static relationMappings = {
     owner: {
-      relation: Model.BelongsToOneRelation,
+      relation: Objection.Model.BelongsToOneRelation,
       // The related model. This can be either a Model subclass constructor or an
       // absolute file path to a module that exports one. We use the file path version
       // here to prevent require loops.
-      modelClass: join(__dirname, 'Person'),
+      modelClass: join(__dirname, 'PersonModel'),
       join: {
         from: 'Animal.ownerId',
         to: 'Person.id'
@@ -41,3 +54,17 @@ export default class Animal extends Model {
     }
   };
 }
+
+export class AnimalModelRepo extends ModelRepo<AnimalModel> implements AnimalRepo 
+{
+  create(animalInfo: AnimalInfo) {
+    // returns an instance; throws Objection.ValidationError
+    return this.Model.fromJson(animalInfo);
+  }
+
+  get(animalID: number) {
+    return this.Model.query().findById(animalID);
+  }
+}
+
+export default AnimalModel;
