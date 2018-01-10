@@ -1,9 +1,9 @@
 
-export interface ResourceObject {
+export interface BrokerObject {
     readonly id: number;
 }
 
-export interface Resource<O extends ResourceObject> {
+export interface Broker<O extends BrokerObject> {
     // Including ...args allows subclasses to override with additional arguments
     store(obj: O, ...args: any[]): Promise<void>;
 }

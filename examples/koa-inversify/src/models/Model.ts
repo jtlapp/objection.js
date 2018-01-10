@@ -1,13 +1,13 @@
 import * as Knex from 'knex';
 import * as Objection from 'objection';
-import {Resource, ResourceObject} from '../dilib/Resource';
+import {Broker, BrokerObject} from '../dilib/Broker';
 
-export class Model extends Objection.Model implements ResourceObject
+export class Model extends Objection.Model implements BrokerObject
 {
     id: number;
 }
 
-export class ModelResource<M extends Model> implements Resource<M> 
+export class ModelBroker<M extends Model> implements Broker<M> 
 {
     Model: Objection.ModelClass<M>;
 

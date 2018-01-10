@@ -1,8 +1,8 @@
 import * as Objection from 'objection';
-import {StampedResource, StampedResourceObject} from '../dilib/StampedResource';
-import {Model, ModelResource} from './Model';
+import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
+import {Model, ModelBroker} from './Model';
 
-export class StampedModel extends Model implements StampedResourceObject
+export class StampedModel extends Model implements StampedBrokerObject
 {
     createdAt: Date;
     updatedAt: Date;
@@ -31,8 +31,8 @@ export class StampedModel extends Model implements StampedResourceObject
     }
 }
 
-export class StampedModelResource<M extends StampedModel>
-    extends ModelResource<M> implements StampedResource<M>
+export class StampedModelBroker<M extends StampedModel>
+    extends ModelBroker<M> implements StampedBroker<M>
 {
     // Including ...args allows subclasses to override with additional arguments
     store(obj: M, ...args: any[]) {

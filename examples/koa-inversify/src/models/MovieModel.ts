@@ -1,10 +1,10 @@
 import * as Objection from 'objection';
-import {ObjectNotFoundError} from '../dilib/Resource';
-import {MovieInfo, MovieResource} from '../resources/MovieResource';
-import {Model, ModelResource} from './Model';
+import {ObjectNotFoundError} from '../dilib/Broker';
+import {MovieSpec, MovieBroker} from '../brokers/MovieBroker';
+import {Model, ModelBroker} from './Model';
 import {PersonModel} from './PersonModel';
 
-export class MovieModel extends Model implements MovieInfo {
+export class MovieModel extends Model implements MovieSpec {
   name: string;
 
   // Optional eager relations.
@@ -47,9 +47,9 @@ export class MovieModel extends Model implements MovieInfo {
   });
 }
 
-export class MovieModelResource extends ModelResource<MovieModel> implements MovieResource
+export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBroker
 {
-  create(movieInfo: MovieInfo) {
+  create(movieInfo: MovieSpec) {
     // returns an instance; throws Objection.ValidationError
     return this.Model.fromJson(movieInfo);
   }

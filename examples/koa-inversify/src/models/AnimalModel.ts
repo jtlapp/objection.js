@@ -1,10 +1,10 @@
 import * as Objection from 'objection';
 import {join} from 'path';
-import {Model, ModelResource} from './Model';
+import {Model, ModelBroker} from './Model';
 import {PersonModel} from './PersonModel';
-import {AnimalInfo, AnimalResource} from '../resources/AnimalResource';
+import {AnimalSpec, AnimalBroker} from '../brokers/AnimalBroker';
 
-export class AnimalModel extends Model implements AnimalInfo { // repo impl
+export class AnimalModel extends Model implements AnimalSpec { // repo impl
   ownerId: number | null;
   name: string;
   species: string;
@@ -46,9 +46,9 @@ export class AnimalModel extends Model implements AnimalInfo { // repo impl
   };
 }
 
-export class AnimalModelResource extends ModelResource<AnimalModel> implements AnimalResource 
+export class AnimalModelBroker extends ModelBroker<AnimalModel> implements AnimalBroker 
 {
-  create(animalInfo: AnimalInfo) {
+  create(animalInfo: AnimalSpec) {
     // returns an instance; throws Objection.ValidationError
     return this.Model.fromJson(animalInfo);
   }

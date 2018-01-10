@@ -1,11 +1,11 @@
 import * as Objection from 'objection';
-import {ObjectNotFoundError} from '../dilib/Resource';
-import {StampedModel, StampedModelResource} from './StampedModel';
+import {ObjectNotFoundError} from '../dilib/Broker';
+import {StampedModel, StampedModelBroker} from './StampedModel';
 import {AnimalModel} from './AnimalModel';
 import {MovieModel} from './MovieModel';
-import {PersonInfo, Address, PersonResource} from '../resources/PersonResource';
+import {PersonSpec, Address, PersonBroker} from '../brokers/PersonBroker';
 
-export class PersonModel extends StampedModel implements PersonInfo {
+export class PersonModel extends StampedModel implements PersonSpec {
   parentId: number | null;
   firstName: string;
   lastName: string;
@@ -101,15 +101,15 @@ export class PersonModel extends StampedModel implements PersonInfo {
 
 export type MyFunc = ((person?: PersonModel) => Promise<PersonModel | PersonModel[]>);
 
-export class PersonModelResource extends StampedModelResource<PersonModel>
-  implements PersonResource
+export class PersonModelBroker extends StampedModelBroker<PersonModel>
+  implements PersonBroker
 {
-  create(personInfo: PersonInfo) {
+  create(personInfo: PersonSpec) {
     // returns an instance; throws Objection.ValidationError
     return this.Model.fromJson(personInfo);
   }
 
-  addChildren(personID: number, children: PersonInfo | PersonInfo[])
+  addChildren(personID: number, children: PersonSpec | PersonSpec[])
   {
     return this.Model.query().findById(personID)
       .then(person => {
@@ -210,11 +210,11 @@ export class PersonModelResource extends StampedModelResource<PersonModel>
       });
   }
 
-  modify(personID: number, mods: Partial<PersonInfo>) {
+  modify(personID: number, mods: Partial<PersonSpec>) {
     return this.Model.query().patch(mods as Partial<PersonModel>).where('id', personID);
   }
 
-  modifyAndGet(personID: number, mods: Partial<PersonInfo>) {
+  modifyAndGet(personID: number, mods: Partial<PersonSpec>) {
     return this.Model.query().patchAndFetchById(personID, mods as Partial<PersonModel>);
   }
 
