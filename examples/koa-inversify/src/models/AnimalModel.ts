@@ -1,25 +1,10 @@
 import * as Objection from 'objection';
-import {Person, PersonModel} from './PersonModel';
 import {join} from 'path';
-import {Repo, RepoObject} from './repo';
-import {Model, ModelRepo} from './modelrepo';
+import {Model, ModelResource} from './Model';
+import {PersonModel} from './PersonModel';
+import {AnimalInfo, AnimalResource} from '../resources/AnimalResource';
 
-export interface AnimalInfo {
-  ownerId: number | null;
-  name: string;
-  species: string;
-}
-
-export interface Animal extends RepoObject, AnimalInfo {
-  // Optional eager relations.
-  owner?: Person;
-}
-
-export interface AnimalRepo extends Repo<Animal> {
-  // TBD
-}
-
-export class AnimalModel extends Model implements AnimalInfo {
+export class AnimalModel extends Model implements AnimalInfo { // repo impl
   ownerId: number | null;
   name: string;
   species: string;
@@ -61,7 +46,7 @@ export class AnimalModel extends Model implements AnimalInfo {
   };
 }
 
-export class AnimalModelRepo extends ModelRepo<AnimalModel> implements AnimalRepo 
+export class AnimalModelResource extends ModelResource<AnimalModel> implements AnimalResource 
 {
   create(animalInfo: AnimalInfo) {
     // returns an instance; throws Objection.ValidationError

@@ -1,20 +1,8 @@
 import * as Objection from 'objection';
-import {Person, PersonModel} from './PersonModel';
-import {Repo, RepoObject, ObjectNotFoundError} from './repo';
-import {Model, ModelRepo} from './modelrepo';
-
-export interface MovieInfo {
-  name: string;
-}
-
-export interface Movie extends RepoObject, MovieInfo {
-  // Optional eager relations.
-  actors?: Person[];
-}
-
-export interface MovieRepo extends Repo<Movie> {
-  // TBD
-}
+import {ObjectNotFoundError} from '../dilib/Resource';
+import {MovieInfo, MovieResource} from '../resources/MovieResource';
+import {Model, ModelResource} from './Model';
+import {PersonModel} from './PersonModel';
 
 export class MovieModel extends Model implements MovieInfo {
   name: string;
@@ -59,7 +47,7 @@ export class MovieModel extends Model implements MovieInfo {
   });
 }
 
-export class MovieModelRepo extends ModelRepo<MovieModel> implements MovieRepo 
+export class MovieModelResource extends ModelResource<MovieModel> implements MovieResource
 {
   create(movieInfo: MovieInfo) {
     // returns an instance; throws Objection.ValidationError

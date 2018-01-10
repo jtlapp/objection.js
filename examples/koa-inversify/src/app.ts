@@ -5,16 +5,17 @@ import * as bodyparser from 'koa-bodyparser';
 import * as Router from 'koa-router';
 import * as json from 'koa-json';
 import {ModelClass, ValidationError} from 'objection';
-import {PersonModel, PersonModelRepo} from './models/PersonModel';
-import {MovieModel, MovieModelRepo} from './models/MovieModel';
-import {AnimalModel, AnimalModelRepo} from './models/AnimalModel';
+import {PersonModel, PersonModelResource} from './models/PersonModel';
+import {MovieModel, MovieModelResource} from './models/MovieModel';
+import {AnimalModel, AnimalModelResource} from './models/AnimalModel';
 import * as api from './api';
 
 const knexConfig = require('../knexfile');
 const knex = Knex(knexConfig.development);
-const personModelRepo = new PersonModelRepo(PersonModel as ModelClass<PersonModel>, knex);
-const movieModelRepo = new MovieModelRepo(MovieModel as ModelClass<MovieModel>, knex);
-const animalModelRepo = new AnimalModelRepo(AnimalModel as ModelClass<AnimalModel>, knex);
+// TBD: abstract into a service interface, hide model implementation
+const personModelResource = new PersonModelResource(PersonModel as ModelClass<PersonModel>, knex);
+const movieModelResource = new MovieModelResource(MovieModel as ModelClass<MovieModel>, knex);
+const animalModelResource = new AnimalModelResource(AnimalModel as ModelClass<AnimalModel>, knex);
 
 // Create or migrate:
 knex.migrate.latest();
@@ -46,9 +47,9 @@ const app = new Koa()
   .use(router.routes());
 
 // Register our REST API.
-api.registerPersonAPI(router, personModelRepo);
-api.registerMovieAPI(router, movieModelRepo);
-api.registerAnimalAPI(router, animalModelRepo);
+api.registerPersonAPI(router, personModelResource);
+api.registerMovieAPI(router, movieModelResource);
+api.registerAnimalAPI(router, animalModelResource);
 
 const server = app.listen(8641, () => {
   console.log('Example app listening at port %s', server.address().port);

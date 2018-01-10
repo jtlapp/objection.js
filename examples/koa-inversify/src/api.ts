@@ -1,9 +1,9 @@
 import * as Router from 'koa-router';
-import {PersonModelRepo} from './models/PersonModel';
-import {MovieModelRepo} from './models/MovieModel';
-import {AnimalModelRepo} from './models/AnimalModel';
+import {PersonModelResource} from './models/PersonModel';
+import {MovieModelResource} from './models/MovieModel';
+import {AnimalModelResource} from './models/AnimalModel';
 
-export function registerPersonAPI(router: Router, personRepo: PersonModelRepo) {
+export function registerPersonAPI(router: Router, personRepo: PersonModelResource) {
 
   // Create a new Person. Because we use `insertGraph` you can pass relations
   // with the person and they also get inserted and related to the person.
@@ -84,7 +84,7 @@ export function registerPersonAPI(router: Router, personRepo: PersonModelRepo) {
   });
 }
 
-export function registerMovieAPI(router: Router, movieRepo: MovieModelRepo) {
+export function registerMovieAPI(router: Router, movieRepo: MovieModelResource) {
 
   // Add existing Person as an actor to a movie.
   router.post('/movies/:id/actors', async ctx => {
@@ -103,7 +103,7 @@ export function registerMovieAPI(router: Router, movieRepo: MovieModelRepo) {
   });
 }
 
-export function registerAnimalAPI(router: Router, animalRepo: AnimalModelRepo) {
+export function registerAnimalAPI(router: Router, animalRepo: AnimalModelResource) {
 
   // Gets a Pet.
   router.get('/pets/:id', async ctx => {

@@ -1,33 +1,9 @@
 import * as Objection from 'objection';
-import {StampedRepo, StampedRepoObject, ObjectNotFoundError} from './repo';
-import {StampedModel, StampedModelRepo} from './modelrepo';
-import {Animal, AnimalModel} from './AnimalModel';
-import {Movie, MovieModel} from './MovieModel';
-
-export interface PersonInfo {
-  parentId: number | null;
-  firstName: string;
-  lastName: string;
-  age: number;
-  address: Address;
-}
-
-export interface Address {
-  street: string;
-  city: string;
-  zipCode: string;
-}
-
-export interface Person extends StampedRepoObject, PersonInfo {
-  // Optional eager relations.
-  parent?: Person;
-  children?: Person[];
-  pets?: Animal[];
-  movies?: Movie[];
-}
-export interface PersonRepo extends StampedRepo<Person> {
-  // TBD
-}
+import {ObjectNotFoundError} from '../dilib/Resource';
+import {StampedModel, StampedModelResource} from './StampedModel';
+import {AnimalModel} from './AnimalModel';
+import {MovieModel} from './MovieModel';
+import {PersonInfo, Address, PersonResource} from '../resources/PersonResource';
 
 export class PersonModel extends StampedModel implements PersonInfo {
   parentId: number | null;
@@ -125,8 +101,8 @@ export class PersonModel extends StampedModel implements PersonInfo {
 
 export type MyFunc = ((person?: PersonModel) => Promise<PersonModel | PersonModel[]>);
 
-export class PersonModelRepo extends StampedModelRepo<PersonModel>
-  implements PersonRepo
+export class PersonModelResource extends StampedModelResource<PersonModel>
+  implements PersonResource
 {
   create(personInfo: PersonInfo) {
     // returns an instance; throws Objection.ValidationError

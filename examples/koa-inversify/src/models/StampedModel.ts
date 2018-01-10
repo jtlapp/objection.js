@@ -1,14 +1,8 @@
-
-import * as Knex from 'knex';
 import * as Objection from 'objection';
-import {Repo, StampedRepo, RepoObject, StampedRepoObject} from './repo';
+import {StampedResource, StampedResourceObject} from '../dilib/StampedResource';
+import {Model, ModelResource} from './Model';
 
-export class Model extends Objection.Model implements RepoObject
-{
-    id: number;
-}
-
-export class StampedModel extends Model implements StampedRepoObject
+export class StampedModel extends Model implements StampedResourceObject
 {
     createdAt: Date;
     updatedAt: Date;
@@ -37,29 +31,8 @@ export class StampedModel extends Model implements StampedRepoObject
     }
 }
 
-export class ModelRepo<M extends Model> implements Repo<M> 
-{
-    Model: Objection.ModelClass<M>;
-
-    constructor(modelClass: Objection.ModelClass<M>, knex: Knex) {
-        this.Model = modelClass.bindKnex(knex);
-    }
-
-    // Including ...args allows subclasses to override with additional arguments
-    store(obj: M, ...args: any[]) {
-        if (obj.id === undefined) {
-            return this.Model.query().insert(obj).then(model => {});
-        }
-        return this.Model.query().update(obj).where('id', obj.id).then(models => {});
-    }
-
-    transaction(callback: (trx: Objection.Transaction) => Promise<any>) {
-        return Objection.transaction(this.Model.knex(), callback);
-    }
-}
-
-export class StampedModelRepo<M extends StampedModel>
-    extends ModelRepo<M> implements StampedRepo<M>
+export class StampedModelResource<M extends StampedModel>
+    extends ModelResource<M> implements StampedResource<M>
 {
     // Including ...args allows subclasses to override with additional arguments
     store(obj: M, ...args: any[]) {
