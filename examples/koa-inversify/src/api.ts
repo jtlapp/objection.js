@@ -50,20 +50,30 @@ export function registerPersonAPI(router: Router, personBroker: PersonModelBroke
 
   // Delete a person.
   router.delete('/persons/:id', async ctx => {
-    await personBroker.drop(ctx.params.id);
-    ctx.body = {};
+    const dropped = await personBroker.drop(ctx.params.id);
+    ctx.body = { dropped };
   });
 
-  // Add children for a Person.
+  // Add a child for a Person.
   router.post('/persons/:id/children', async ctx => {
-    // Return the added child.
-    ctx.body = await personBroker.addChildren(ctx.params.id, ctx.request.body);
+    const childOrChildren = ctx.request.body;
+    // Return the added child or children.
+    if (Array.isArray(childOrChildren)) {
+      ctx.body = await personBroker.addChildren(ctx.params.id, childOrChildren);
+    } else {
+      ctx.body = await personBroker.addChild(ctx.params.id, childOrChildren);
+    }
   });
 
   // Add pets for a Person.
   router.post('/persons/:id/pets', async ctx => {
-    // Return the added pets.
-    ctx.body = await personBroker.addPets(ctx.params.id, ctx.request.body);
+    const petOrPets = ctx.request.body;
+    // Return the added pet or pets.
+    if (Array.isArray(petOrPets)) {
+      ctx.body = await personBroker.addPets(ctx.params.id, petOrPets);
+    } else {
+      ctx.body = await personBroker.addPet(ctx.params.id, petOrPets);
+    }
   });
 
   // Get a Person's pets. The result can be filtered using query parameters
@@ -74,8 +84,13 @@ export function registerPersonAPI(router: Router, personBroker: PersonModelBroke
 
   // Add movies for a Person.
   router.post('/persons/:id/movies', async ctx => {
+    const movieOrMovies = ctx.request.body;
     // Return the person's movies.
-    ctx.body = await personBroker.addMovies(ctx.params.id, ctx.request.body);
+    if (Array.isArray(movieOrMovies)) {
+      ctx.body = await personBroker.addMovies(ctx.params.id, movieOrMovies);
+    } else {
+      ctx.body = await personBroker.addMovie(ctx.params.id, movieOrMovies);
+    }
   });
 
   // Get a Person's movies.

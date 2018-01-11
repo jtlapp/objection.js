@@ -13,5 +13,6 @@ export interface Animal extends BrokerObject, AnimalSpec {
 }
 
 export interface AnimalBroker extends Broker<Animal> {
-  // TBD
+  create(animalInfo: AnimalSpec): Animal;
+  get(animalID: number): Promise<Animal | undefined>;
 }

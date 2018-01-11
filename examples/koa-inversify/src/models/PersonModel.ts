@@ -1,5 +1,7 @@
 import * as Objection from 'objection';
 import {ObjectNotFoundError} from '../dilib/Broker';
+import {AnimalSpec} from '../brokers/AnimalBroker';
+import {MovieSpec} from '../brokers/MovieBroker';
 import {StampedModel, StampedModelBroker} from './StampedModel';
 import {AnimalModel} from './AnimalModel';
 import {MovieModel} from './MovieModel';
@@ -98,7 +100,7 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
     return this.Model.fromJson(personInfo);
   }
 
-  addChildren(personID: number, children: PersonSpec | PersonSpec[])
+  addChild(personID: number, child: PersonSpec)
   {
     return this.Model.query().findById(personID)
       .then(person => {
@@ -106,17 +108,24 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
         if (!person) {
           throw new ObjectNotFoundError('person', personID);
         }
-        let result: Promise<PersonModel | PersonModel[]>;
-        if (Array.isArray(children)) { // just to satisfy static typing
-          result = person.$relatedQuery<PersonModel>('children').insert(<PersonModel[]>children);
-        } else {
-          result = person.$relatedQuery<PersonModel>('children').insert(<PersonModel>children);
-        }
-        return result;
+        return person.$relatedQuery<PersonModel>('children').insert(<PersonSpec>child);
       });
   }
 
-  addMovies(personID: number, movies: /*TBD*/any) {
+  addChildren(personID: number, children: PersonSpec[])
+  {
+    return this.Model.query().findById(personID)
+      .then(person => {
+
+        if (!person) {
+          throw new ObjectNotFoundError('person', personID);
+        }
+        // postgres allows batch insertions
+        return person.$relatedQuery<PersonModel>('children').insert(<PersonSpec[]>children);
+      });
+  }
+
+  addMovie(personID: number, movie: MovieSpec) {
     // Inserting a movie for a person creates two queries: the movie insert query
     // and the join table row insert query. It is wise to use a transaction here.
     return this.transaction(trx => {
@@ -126,24 +135,54 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
           if (!person) {
             throw new ObjectNotFoundError('person', personID);
           }
-          return person.$relatedQuery('movies', trx).insert(movies);
+          return person.$relatedQuery<MovieModel>('movies', trx).insert(movie);
         });
     });
   }
 
-  addPets(personID: number, pets: /*TBD*/any) {
+  addMovies(personID: number, movies: MovieSpec[]) {
+    // Inserting a movie for a person creates two queries: the movie insert query
+    // and the join table row insert query. It is wise to use a transaction here.
+    return this.transaction(trx => {
+      return this.Model.query(trx).findById(personID)
+        .then(person => {
+
+          if (!person) {
+            throw new ObjectNotFoundError('person', personID);
+          }
+          // postgres allows batch insertions
+          return person.$relatedQuery<MovieModel>('movies', trx).insert(<MovieSpec[]>movies);
+        });
+    });
+  }
+
+  addPet(personID: number, pet: AnimalSpec) {
     return this.Model.query().findById(personID)
       .then(person => {
 
         if (!person) {
           throw new ObjectNotFoundError('person', personID);
         }
-        return person.$relatedQuery('pets').insert(pets);
+        return person.$relatedQuery<AnimalModel>('pets').insert(pet);
+      });
+  }
+
+  addPets(personID: number, pets: AnimalSpec[]) {
+    return this.Model.query().findById(personID)
+      .then(person => {
+
+        if (!person) {
+          throw new ObjectNotFoundError('person', personID);
+        }
+        // postgres allows batch insertions
+        return person.$relatedQuery<AnimalModel>('pets').insert(pets);
       });
   }
 
   drop(personID: number) {
-    return this.Model.query().deleteById(personID);
+    return this.Model.query().deleteById(personID).then(dropCount => {
+      return (dropCount === 1);
+    });
   }
 
   get(personID: number) {
@@ -195,17 +234,19 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
         if (!person) {
           throw new ObjectNotFoundError('person', personID);
         }
-        return person.$relatedQuery('movies');
+        return person.$relatedQuery<MovieModel>('movies');
       });
   }
 
   modify(personID: number, mods: Partial<PersonSpec>) {
-    return this.Model.query().patch(mods as Partial<PersonModel>).where('id', personID);
+    return this.Model.query().patch(mods).where('id', personID);
   }
 
   modifyAndGet(personID: number, mods: Partial<PersonSpec>) {
-    return this.Model.query().patchAndFetchById(personID, mods as Partial<PersonModel>);
+    return this.Model.query().patchAndFetchById(personID, mods);
   }
+
+  // TBD: move the following to base class if can't get type enforcement
 
   // Patch a person and upsert its relations.
   modifyGraph(personID: number, graph: /*TBD*/any, allow = '*') {
@@ -228,7 +269,6 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
   storeGraph(graph: /*TBD*/any, allow: string = '*') {
     // It's a good idea to wrap `insertGraph` call in a transaction since it
     // may create multiple queries.
-    // TBD: look at moving this to base class, including ...args
     return this.transaction(trx => {
       return (
         this.Model.query(trx)

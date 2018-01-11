@@ -1,6 +1,6 @@
 import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
-import {Animal} from './AnimalBroker';
-import {Movie} from './MovieBroker';
+import {AnimalSpec, Animal} from './AnimalBroker';
+import {MovieSpec, Movie} from './MovieBroker';
 
 export interface PersonSpec {
   parentId: number | null; // TBD: should this be optional?
@@ -23,6 +23,24 @@ export interface Person extends StampedBrokerObject, PersonSpec {
   pets?: Animal[];
   movies?: Movie[];
 }
+
 export interface PersonBroker extends StampedBroker<Person> {
-  // TBD
+  create(personInfo: PersonSpec): Person;
+  addChild(personID: number, child: PersonSpec): Promise<Person>;
+  addChildren(personID: number, children: PersonSpec[]): Promise<Person[]>;
+  addMovie(personID: number, movie: MovieSpec): Promise<Movie>;
+  addMovies(personID: number, movies: MovieSpec[]): Promise<Movie[]>;
+  addPet(personID: number, pets: AnimalSpec): Promise<Animal>;
+  addPets(personID: number, pets: AnimalSpec[]): Promise<Animal[]>;
+  drop(personID: number): Promise<boolean>;
+  get(personID: number): Promise<Person | undefined>;
+  // getGraph(eager: string = '', allow: string = '*',
+  //   filter: {minAge?: number, maxAge?: number, firstName?: string} = {}
+  // );
+  //getPets(personID: number, filter: {name?: string, species?: string}): Promise<Animal[]>;
+  getMovies(personID: number): Promise<Movie[]>;
+  //modify(personID: number, mods: Partial<PersonSpec>): Promise<Person>;
+  modifyAndGet(personID: number, mods: Partial<PersonSpec>): Promise<Person>;
+  // modifyGraph(personID: number, graph: /*TBD*/any, allow = '*');
+  // storeGraph(graph: /*TBD*/any, allow: string = '*');
 }

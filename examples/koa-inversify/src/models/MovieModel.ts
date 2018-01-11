@@ -59,7 +59,7 @@ export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBr
         if (!movie) {
           throw new ObjectNotFoundError('movie', movieID);
         }
-        return movie.$relatedQuery('actors').relate(actorID);
+        return movie.$relatedQuery<MovieModel>('actors').relate(actorID);
       });
   }
 
@@ -70,7 +70,7 @@ export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBr
         if (!movie) {
           throw new ObjectNotFoundError('movie', movieID);
         }
-        return movie.$relatedQuery('actors');
+        return movie.$relatedQuery<PersonModel>('actors');
       });
   }
 
