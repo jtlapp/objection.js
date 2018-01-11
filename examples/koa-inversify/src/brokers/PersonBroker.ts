@@ -3,7 +3,7 @@ import {Animal} from './AnimalBroker';
 import {Movie} from './MovieBroker';
 
 export interface PersonSpec {
-  parentId: number | null;
+  parentId: number | null; // TBD: should this be optional?
   firstName: string;
   lastName: string;
   age: number;

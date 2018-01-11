@@ -2,18 +2,16 @@ import * as Objection from 'objection';
 import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
 import {Model, ModelBroker} from './Model';
 
-export class StampedModel extends Model implements StampedBrokerObject
+export interface StampedModel extends StampedBrokerObject { }
+export class StampedModel extends Model
 {
-    createdAt: Date;
-    updatedAt: Date;
-
     $beforeInsert(context: Objection.QueryContext) {
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
+        this.createdAt! = new Date();
+        this.updatedAt! = new Date();
     }
 
     $beforeUpdate(opt: Objection.ModelOptions, context: Objection.QueryContext) {
-        this.updatedAt = new Date();
+        this.updatedAt! = new Date();
     }
 
     $parseDatabaseJson(json: object) {

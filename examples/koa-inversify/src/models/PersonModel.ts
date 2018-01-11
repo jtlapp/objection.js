@@ -3,20 +3,10 @@ import {ObjectNotFoundError} from '../dilib/Broker';
 import {StampedModel, StampedModelBroker} from './StampedModel';
 import {AnimalModel} from './AnimalModel';
 import {MovieModel} from './MovieModel';
-import {PersonSpec, Address, PersonBroker} from '../brokers/PersonBroker';
+import {PersonSpec, Person, PersonBroker} from '../brokers/PersonBroker';
 
-export class PersonModel extends StampedModel implements PersonSpec {
-  parentId: number | null;
-  firstName: string;
-  lastName: string;
-  age: number;
-  address: Address;
-
-  // Optional eager relations.
-  parent?: PersonModel;
-  children?: PersonModel[];
-  pets?: AnimalModel[];
-  movies?: MovieModel[];
+export interface PersonModel extends Person { }
+export class PersonModel extends StampedModel {
 
   // Table name is the only required property.
   static tableName = 'Person';
@@ -98,8 +88,7 @@ export class PersonModel extends StampedModel implements PersonSpec {
     }
   };
 }
-
-export type MyFunc = ((person?: PersonModel) => Promise<PersonModel | PersonModel[]>);
+export default PersonModel;
 
 export class PersonModelBroker extends StampedModelBroker<PersonModel>
   implements PersonBroker
@@ -250,5 +239,3 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
     });
   }
 }
-
-export default PersonModel;

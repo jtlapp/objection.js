@@ -1,16 +1,10 @@
 import * as Objection from 'objection';
 import {join} from 'path';
 import {Model, ModelBroker} from './Model';
-import {PersonModel} from './PersonModel';
-import {AnimalSpec, AnimalBroker} from '../brokers/AnimalBroker';
+import {AnimalSpec, Animal, AnimalBroker} from '../brokers/AnimalBroker';
 
-export class AnimalModel extends Model implements AnimalSpec { // repo impl
-  ownerId: number | null;
-  name: string;
-  species: string;
-
-  // Optional eager relations.
-  owner?: PersonModel;
+export interface AnimalModel extends Animal { }
+export class AnimalModel extends Model {
 
   // Table name is the only required property.
   static tableName = 'Animal';
@@ -45,6 +39,7 @@ export class AnimalModel extends Model implements AnimalSpec { // repo impl
     }
   };
 }
+export default AnimalModel;
 
 export class AnimalModelBroker extends ModelBroker<AnimalModel> implements AnimalBroker 
 {
@@ -57,5 +52,3 @@ export class AnimalModelBroker extends ModelBroker<AnimalModel> implements Anima
     return this.Model.query().findById(animalID);
   }
 }
-
-export default AnimalModel;

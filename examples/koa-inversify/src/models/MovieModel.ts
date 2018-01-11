@@ -1,14 +1,11 @@
 import * as Objection from 'objection';
 import {ObjectNotFoundError} from '../dilib/Broker';
-import {MovieSpec, MovieBroker} from '../brokers/MovieBroker';
+import {MovieSpec, Movie, MovieBroker} from '../brokers/MovieBroker';
 import {Model, ModelBroker} from './Model';
 import {PersonModel} from './PersonModel';
 
-export class MovieModel extends Model implements MovieSpec {
-  name: string;
-
-  // Optional eager relations.
-  actors?: PersonModel[];
+export interface MovieModel extends Movie { }
+export class MovieModel extends Model {
 
   // Table name is the only required property.
   static tableName = 'Movie';
@@ -46,6 +43,7 @@ export class MovieModel extends Model implements MovieSpec {
     }
   });
 }
+export default MovieModel;
 
 export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBroker
 {
@@ -80,5 +78,3 @@ export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBr
     return this.Model.query().findById(movieID);
   }
 }
-
-export default MovieModel;
