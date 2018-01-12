@@ -5,7 +5,7 @@ import {MovieSpec} from '../brokers/MovieBroker';
 import {StampedModel, StampedModelBroker} from './StampedModel';
 import {AnimalModel} from './AnimalModel';
 import {MovieModel} from './MovieModel';
-import {PersonSpec, Person, PersonBroker} from '../brokers/PersonBroker';
+import {PersonSpec, Person, PersonBroker, PersonFilter, PetFilter} from '../brokers/PersonBroker';
 
 export interface PersonModel extends Person { }
 export class PersonModel extends StampedModel {
@@ -189,13 +189,11 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
     return this.Model.query().findById(personID);
   }
 
-  getGraph(eager: string = '', allow: string = '*',
-    filter: {minAge?: number, maxAge?: number, firstName?: string} = {}
-  ) {
+  getGraph(eager: string = '', allow: string = '*', filter: PersonFilter = {}) {
     // We don't need to check for the existence of the query parameters because
     // we call the `skipUndefined` method. It causes the query builder methods
     // to do nothing if one of the values is undefined.
-    return this.Model.query()
+    return <Promise<Person[]>><any>this.Model.query() // TBD: fix type after typings fixed
       .skipUndefined()
       // For security reasons, limit the relations that can be fetched.
       .allowEager(allow)
@@ -208,7 +206,7 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
       .modifyEager('[pets, children.pets]', qb => qb.orderBy('name'));
   }
 
-  getPets(personID: number, filter: {name?: string, species?: string} = {}) {
+  getPets(personID: number, filter: PetFilter = {}) {
     return this.Model.query().findById(personID)
       .then(person => {
 
@@ -220,7 +218,7 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
         // we call the `skipUndefined` method. It causes the query builder methods
         // to do nothing if one of the values is undefined.
         return person
-          .$relatedQuery('pets')
+          .$relatedQuery<AnimalModel>('pets')
           .skipUndefined()
           .where('name', 'like', filter.name)
           .where('species', filter.species);
@@ -239,7 +237,9 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
   }
 
   modify(personID: number, mods: Partial<PersonSpec>) {
-    return this.Model.query().patch(mods).where('id', personID);
+    return this.Model.query().patch(mods).where('id', personID).then((patchCount: any) => {
+      return (patchCount === 1); // TBD: remove 'any' type when patch type gets fixed
+    });
   }
 
   modifyAndGet(personID: number, mods: Partial<PersonSpec>) {

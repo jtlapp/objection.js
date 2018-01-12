@@ -2,6 +2,9 @@ import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
 import {AnimalSpec, Animal} from './AnimalBroker';
 import {MovieSpec, Movie} from './MovieBroker';
 
+export type PersonFilter = {minAge?: number, maxAge?: number, firstName?: string};
+export type PetFilter = {name?: string, species?: string};
+
 export interface PersonSpec {
   parentId: number | null; // TBD: should this be optional?
   firstName: string;
@@ -33,13 +36,11 @@ export interface PersonBroker extends StampedBroker<Person> {
   addPet(personID: number, pets: AnimalSpec): Promise<Animal>;
   addPets(personID: number, pets: AnimalSpec[]): Promise<Animal[]>;
   drop(personID: number): Promise<boolean>;
-  get(personID: number): Promise<Person | undefined>;
-  // getGraph(eager: string = '', allow: string = '*',
-  //   filter: {minAge?: number, maxAge?: number, firstName?: string} = {}
-  // );
-  //getPets(personID: number, filter: {name?: string, species?: string}): Promise<Animal[]>;
+  get(personID: number): Promise<Person | undefined>; // TBD: is undefined possible?
+  getGraph(eager: string, allow: string, filter: PersonFilter): Promise<Person[]>;
+  getPets(personID: number, filter: PetFilter): Promise<Animal[]>;
   getMovies(personID: number): Promise<Movie[]>;
-  //modify(personID: number, mods: Partial<PersonSpec>): Promise<Person>;
+  modify(personID: number, mods: Partial<PersonSpec>): Promise<boolean>;
   modifyAndGet(personID: number, mods: Partial<PersonSpec>): Promise<Person>;
   // modifyGraph(personID: number, graph: /*TBD*/any, allow = '*');
   // storeGraph(graph: /*TBD*/any, allow: string = '*');

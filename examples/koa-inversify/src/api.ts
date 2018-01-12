@@ -18,6 +18,7 @@ export function registerPersonAPI(router: Router, personBroker: PersonModelBroke
   router.patch('/persons/:id', async ctx => {
     // Return modified person.
     ctx.body = await personBroker.modifyAndGet(ctx.params.id, ctx.request.body);
+    
   });
 
   // Patch a person and upsert its relations.
