@@ -1,27 +1,49 @@
-import * as Knex from 'knex';
+import * as Minimist from 'minimist';
 import * as Koa from 'koa';
 import * as logger from 'koa-morgan';
 import * as bodyparser from 'koa-bodyparser';
 import * as Router from 'koa-router';
 import * as json from 'koa-json';
-import {ModelClass, ValidationError} from 'objection';
-import {PersonModel, PersonModelBroker} from './models/PersonModel';
-import {MovieModel, MovieModelBroker} from './models/MovieModel';
-import {AnimalModel, AnimalModelBroker} from './models/AnimalModel';
-import * as api from './api';
+import {join} from 'path';
+import {ValidationError} from 'objection';
+import {Deployment} from './deployments/Deployment';
 
-const knexConfig = require('../knexfile');
-const knex = Knex(knexConfig.development);
-// TBD: abstract into a service interface, hide model implementation
-const personModelBroker = new PersonModelBroker(PersonModel as ModelClass<PersonModel>, knex);
-const movieModelBroker = new MovieModelBroker(MovieModel as ModelClass<MovieModel>, knex);
-const animalModelBroker = new AnimalModelBroker(AnimalModel as ModelClass<AnimalModel>, knex);
+// Process command line arguments.
 
-// Create or migrate:
-knex.migrate.latest();
+const args = Minimist(process.argv.slice(2), {
+    alias: {
+        h: 'help'
+    },
+    boolean: [ 'h' ],
+    string: [
+        'deploy',
+        'port'
+    ],
+    default: { }
+});
+
+if (args.help) {
+    console.log("node app.js [--port=N] [--deploy=<deployment-filename>]");
+    process.exit();
+}
+
+let port = 8641;
+if (typeof args.port === 'string') {
+    port = Number(args.port);
+    if (Number.isNaN(port) || !Number.isInteger(port)) {
+        console.log("invalid port number")
+        process.exit(1);
+    }
+}
+
+let deploymentFilename = 'default';
+if (typeof args.deploy === 'string') {
+  deploymentFilename = args.deploy;
+}
 
 // Error handling. The `ValidationError` instances thrown by objection.js have a `statusCode`
 // property that is sent as the status code of the response.
+
 async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>) {
   try {
     await next();
@@ -37,20 +59,17 @@ async function errorHandler(ctx: Router.IRouterContext, next: () => Promise<any>
   }
 }
 
-const router = new Router();
+// Configure and launch the server.
 
 const app = new Koa()
   .use(json({pretty: true}))
   .use(errorHandler)
   .use(logger('dev'))
-  .use(bodyparser())
-  .use(router.routes());
+  .use(bodyparser());
 
-// Register our REST API.
-api.registerPersonAPI(router, personModelBroker);
-api.registerMovieAPI(router, movieModelBroker);
-api.registerAnimalAPI(router, animalModelBroker);
+const deployment = <Deployment>require(join(__dirname, 'deployments/', deploymentFilename));
+deployment.config(app);
 
-const server = app.listen(8641, () => {
+const server = app.listen(port, () => {
   console.log('Example app listening at port %s', server.address().port);
 });

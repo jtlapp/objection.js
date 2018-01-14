@@ -1,11 +1,16 @@
 import * as Objection from 'objection';
-import {ObjectNotFoundError} from '../dilib/Broker';
+import {ObjectNotFoundError, EagerRelation} from '../wrapper/Broker';
 import {MovieSpec, Movie, MovieBroker} from '../brokers/MovieBroker';
-import {Model, ModelBroker} from './Model';
+import {BaseModel, ModelBroker} from './BaseModel';
 import {PersonModel} from './PersonModel';
 
 export interface MovieModel extends Movie { }
-export class MovieModel extends Model {
+export class MovieModel extends BaseModel {
+
+  // Optional eager relations. This declaration is only necessary if a broker
+  // will be accessing methods of models found within a graph OR if the broker
+  // object interface does not expose the eager relation but a broker needs it.
+  actors?: EagerRelation<PersonModel>[];
 
   // Table name is the only required property.
   static tableName = 'Movie';
@@ -43,6 +48,7 @@ export class MovieModel extends Model {
     }
   });
 }
+// Make model available for on-demand loading in case of cyclic dependencies.
 export default MovieModel;
 
 export class MovieModelBroker extends ModelBroker<MovieModel> implements MovieBroker

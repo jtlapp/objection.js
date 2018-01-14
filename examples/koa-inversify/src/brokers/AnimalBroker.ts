@@ -1,5 +1,5 @@
+import {Broker, BrokerObject, EagerRelation} from '../wrapper/Broker';
 import {Person} from './PersonBroker';
-import {Broker, BrokerObject} from '../dilib/Broker';
 
 export interface AnimalSpec {
   ownerId: number | null; // TBD: should this be optional?
@@ -8,8 +8,9 @@ export interface AnimalSpec {
 }
 
 export interface Animal extends BrokerObject, AnimalSpec {
-  // Optional eager relations.
-  owner?: Person;
+  // Optional eager relations. This declaration is only necessary if a broker
+  // exposes eager graphs requiring the declaration through the broker's API.
+  owner?: EagerRelation<Person>
 }
 
 export interface AnimalBroker extends Broker<Animal> {

@@ -1,9 +1,21 @@
+import * as Koa from 'koa';
 import * as Router from 'koa-router';
-import {PersonModelBroker} from './models/PersonModel';
-import {MovieModelBroker} from './models/MovieModel';
-import {AnimalModelBroker} from './models/AnimalModel';
+import {MovieStarRepo} from '../repos/MovieStarRepo';
+import {AnimalBroker} from '../brokers/AnimalBroker';
+import {MovieBroker} from '../brokers/MovieBroker';
+import {PersonBroker} from '../brokers/PersonBroker';
 
-export function registerPersonAPI(router: Router, personBroker: PersonModelBroker) {
+export class MovieStarService {
+    constructor(app: Koa, repo: MovieStarRepo) {
+        const router = new Router();
+        registerPersonEndPoints(router, repo.personBroker);
+        registerAnimalEndPoints(router, repo.animalBroker);
+        registerMovieEndPoints(router, repo.movieBroker);
+        app.use(router.routes());
+    }
+}
+
+export function registerPersonEndPoints(router: Router, personBroker: PersonBroker) {
 
   // Create a new Person. Because we use `insertGraph` you can pass relations
   // with the person and they also get inserted and related to the person.
@@ -100,7 +112,7 @@ export function registerPersonAPI(router: Router, personBroker: PersonModelBroke
   });
 }
 
-export function registerMovieAPI(router: Router, movieBroker: MovieModelBroker) {
+export function registerMovieEndPoints(router: Router, movieBroker: MovieBroker) {
 
   // Add existing Person as an actor to a movie.
   router.post('/movies/:id/actors', async ctx => {
@@ -119,7 +131,7 @@ export function registerMovieAPI(router: Router, movieBroker: MovieModelBroker) 
   });
 }
 
-export function registerAnimalAPI(router: Router, animalBroker: AnimalModelBroker) {
+export function registerAnimalEndPoints(router: Router, animalBroker: AnimalBroker) {
 
   // Gets a Pet.
   router.get('/pets/:id', async ctx => {

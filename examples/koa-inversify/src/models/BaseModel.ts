@@ -1,11 +1,11 @@
 import * as Knex from 'knex';
 import * as Objection from 'objection';
-import {Broker, BrokerObject} from '../dilib/Broker';
+import {Broker, BrokerObject} from '../wrapper/Broker';
 
-export interface Model extends BrokerObject { }
-export class Model extends Objection.Model { }
+export interface BaseModel extends BrokerObject { }
+export class BaseModel extends Objection.Model { }
 
-export class ModelBroker<M extends Model> implements Broker<M> 
+export class ModelBroker<M extends BaseModel> implements Broker<M> 
 {
     Model: Objection.ModelClass<M>;
 

@@ -1,4 +1,5 @@
-import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
+import {EagerRelation} from '../wrapper/Broker';
+import {StampedBroker, StampedBrokerObject} from '../wrapper/StampedBroker';
 import {AnimalSpec, Animal} from './AnimalBroker';
 import {MovieSpec, Movie} from './MovieBroker';
 
@@ -20,11 +21,12 @@ export interface Address {
 }
 
 export interface Person extends StampedBrokerObject, PersonSpec {
-  // Optional eager relations.
-  parent?: Person;
-  children?: Person[];
-  pets?: Animal[];
-  movies?: Movie[];
+  // Optional eager relations. These declarations are only necessary if a broker
+  // exposes eager graphs requiring them through its API.
+  parent?: EagerRelation<Person>;
+  children?: EagerRelation<Person>[];
+  pets?: EagerRelation<Animal>[];
+  movies?: EagerRelation<Movie>[];
 }
 
 export interface PersonBroker extends StampedBroker<Person> {
@@ -37,11 +39,14 @@ export interface PersonBroker extends StampedBroker<Person> {
   addPets(personID: number, pets: AnimalSpec[]): Promise<Animal[]>;
   drop(personID: number): Promise<boolean>;
   get(personID: number): Promise<Person | undefined>; // TBD: is undefined possible?
-  getGraph(eager: string, allow: string, filter: PersonFilter): Promise<Person[]>;
+  // TBD: should the following return an EagerRelation<Person>[]?
+  getGraph(eager: string, allow: string, filter: PersonFilter): Promise<Partial<Person>[]>;
   getPets(personID: number, filter: PetFilter): Promise<Animal[]>;
   getMovies(personID: number): Promise<Movie[]>;
   modify(personID: number, mods: Partial<PersonSpec>): Promise<boolean>;
   modifyAndGet(personID: number, mods: Partial<PersonSpec>): Promise<Person>;
-  // modifyGraph(personID: number, graph: /*TBD*/any, allow = '*');
-  // storeGraph(graph: /*TBD*/any, allow: string = '*');
+  // TBD: should the following take an EagerRelation<Person>?
+  modifyGraph(personID: number, graph: Partial<Person>, allow: string): Promise<Person>;
+  // TBD: should the following take an EagerRelation<Person>?
+  storeGraph(graph: Person, allow: string): Promise<Person>;
 }

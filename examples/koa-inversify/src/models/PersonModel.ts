@@ -1,5 +1,5 @@
 import * as Objection from 'objection';
-import {ObjectNotFoundError} from '../dilib/Broker';
+import {ObjectNotFoundError, EagerRelation} from '../wrapper/Broker';
 import {AnimalSpec} from '../brokers/AnimalBroker';
 import {MovieSpec} from '../brokers/MovieBroker';
 import {StampedModel, StampedModelBroker} from './StampedModel';
@@ -9,6 +9,14 @@ import {PersonSpec, Person, PersonBroker, PersonFilter, PetFilter} from '../brok
 
 export interface PersonModel extends Person { }
 export class PersonModel extends StampedModel {
+
+  // Optional eager relations. These declarations are only necessary if a broker
+  // will be accessing methods of models found within a graph OR if the broker
+  // object interface does not expose eager relations but a broker needs them.
+  parent?: EagerRelation<PersonModel>;
+  children?: EagerRelation<PersonModel>[];
+  pets?: EagerRelation<AnimalModel>[];
+  movies?: EagerRelation<MovieModel>[];
 
   // Table name is the only required property.
   static tableName = 'Person';
@@ -90,6 +98,7 @@ export class PersonModel extends StampedModel {
     }
   };
 }
+// Make model available for on-demand loading in case of cyclic dependencies.
 export default PersonModel;
 
 export class PersonModelBroker extends StampedModelBroker<PersonModel>
@@ -249,14 +258,14 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
   // TBD: move the following to base class if can't get type enforcement
 
   // Patch a person and upsert its relations.
-  modifyGraph(personID: number, graph: /*TBD*/any, allow = '*') {
+  modifyGraph(personID: number, graph: Partial<PersonModel>, allow = '*') {
     // Make sure the person has the correct id because `upsertGraph` uses the id fields
     // to determine which models need to be updated and which inserted.
-    graph.id = personID;
+    graph.id! = personID;
 
     // It's a good idea to wrap `upsertGraph` call in a transaction since it
     // may create multiple queries.
-    return this.transaction(trx => {
+    return this.transaction(trx => { // TBD: revisit this: it has type any
       return (
         this.Model.query(trx)
           // For security reasons, limit the relations that can be upserted.
@@ -266,10 +275,10 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
     });
   }
 
-  storeGraph(graph: /*TBD*/any, allow: string = '*') {
+  storeGraph(graph: PersonModel, allow: string = '*') {
     // It's a good idea to wrap `insertGraph` call in a transaction since it
     // may create multiple queries.
-    return this.transaction(trx => {
+    return this.transaction(trx => { // TBD: revisit this: it has type any
       return (
         this.Model.query(trx)
           // For security reasons, limit the relations that can be inserted.

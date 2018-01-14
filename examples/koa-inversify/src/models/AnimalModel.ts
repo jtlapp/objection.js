@@ -1,10 +1,17 @@
 import * as Objection from 'objection';
 import {join} from 'path';
-import {Model, ModelBroker} from './Model';
+import {EagerRelation} from '../wrapper/Broker';
+import {BaseModel, ModelBroker} from './BaseModel';
+import {PersonModel} from './PersonModel';
 import {AnimalSpec, Animal, AnimalBroker} from '../brokers/AnimalBroker';
 
 export interface AnimalModel extends Animal { }
-export class AnimalModel extends Model {
+export class AnimalModel extends BaseModel {
+
+  // Optional eager relations. This declaration is only necessary if a broker
+  // will be accessing methods of models found within a graph OR if the broker
+  // object interface does not expose the eager relation but a broker needs it.
+  owner?: EagerRelation<PersonModel>
 
   // Table name is the only required property.
   static tableName = 'Animal';
@@ -39,6 +46,7 @@ export class AnimalModel extends Model {
     }
   };
 }
+// Make model available for on-demand loading in case of cyclic dependencies.
 export default AnimalModel;
 
 export class AnimalModelBroker extends ModelBroker<AnimalModel> implements AnimalBroker 

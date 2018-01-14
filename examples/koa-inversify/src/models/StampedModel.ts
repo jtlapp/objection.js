@@ -1,9 +1,9 @@
 import * as Objection from 'objection';
-import {StampedBroker, StampedBrokerObject} from '../dilib/StampedBroker';
-import {Model, ModelBroker} from './Model';
+import {StampedBroker, StampedBrokerObject} from '../wrapper/StampedBroker';
+import {BaseModel, ModelBroker} from './BaseModel';
 
 export interface StampedModel extends StampedBrokerObject { }
-export class StampedModel extends Model
+export class StampedModel extends BaseModel
 {
     $beforeInsert(context: Objection.QueryContext) {
         this.createdAt! = new Date();
