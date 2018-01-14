@@ -1,4 +1,4 @@
-# Example of encapsulating objection.js behind Typescript interfaces
+# Example Typescript Wrapper for Objection.js
 
 NOTE: Project is still under development.
 
@@ -9,7 +9,7 @@ Wrapping Objection.js behind interfaces can be helpful for the following reasons
 - It becomes less risky to invest in Objection.js, because you can readily switch out the Objection.js solution for another solution without affecting the rest of the application.
 - Should you find that different database solutions are needed for different deployments, you can easily deploy Objection.js/RDBMS in one context and another solution such as REDIS in another.
 - In cases where it is difficult to emulate a runtime environment by prepopulating a database, you can mock the Objection.js solution to automate behavior for testing purposes -- without having to emulate the rich Objection.js API.
-- It demonstrates using Objection.js with Typescript and making good use of Typescript for the purpose.
+- It demonstrates taking full advantage of using Typescript with Objection.js.
 
 The demo treats a collection of related Objection.js models as a repository. Each repository consists of repository objects and brokers. A broker is an interface to the repository that accesses the repository through a particular type of object. A repository object is thus an abstraction of an Objection.js model, and a broker is thus an abstraction of the static methods of a particular model.
 
