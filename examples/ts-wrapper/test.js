@@ -1,8 +1,18 @@
 
 const axios = require('axios');
 const assert = require('chai').assert;
+const Knex = require('knex');
 
-// must be run on a clean database; "npm run start" immediately beforehand
+const knexConfig = require('./knexfile');
+const knex = Knex(knexConfig['development']);
+
+before(() => {
+  return clearDatabase(knex);
+});
+
+after(() => {
+  knex.destroy();
+});
 
 const req = axios.create({
   baseURL: 'http://localhost:8641/'
@@ -276,6 +286,68 @@ describe("reading persons", () => {
   });
 });
 
+describe("error handling", () => {
+
+  it("declines an insert post that's missing a required field", async () => {
+
+    try {
+      let output = await req.post('persons', {
+        lastName: "Lawrence",
+        age: 24
+      });
+      assert(false, "should have errored");
+    }
+    catch (err) {
+      const response = err.response;
+      assert.strictEqual(response.status, 400);
+      const firstNameData = response.data.data.firstName;
+      assert.exists(firstNameData);
+      assert.strictEqual(firstNameData[0].keyword, 'required');
+    }
+  });
+
+  it("declines an eager insert post that's missing a required field", async () => {
+
+    try {
+      let output = await req.post(`persons/${jennifer.id}/pets`, {
+        species: 'dog'
+      });
+      assert(false, "should have errored");
+    }
+    catch (err) {
+      const response = err.response;
+      assert.strictEqual(response.status, 400);
+      const nameData = response.data.data.name;
+      assert.exists(nameData);
+      assert.strictEqual(nameData[0].keyword, 'required');
+    }
+  });
+
+  it("declines an eager insert post into an invalid model ID", async () => {
+
+    try {
+      let output = await req.post(`persons/9999/pets`, {
+        name: 'Rex',
+        species: 'dog'
+      });
+      assert(false, "should have errored");
+    }
+    catch (err) {
+      assert.strictEqual(err.response.status, 404);
+    }
+  });
+});
+
+describe("deleting objects", () => {
+
+  it("deletes a person", async () => {
+
+    let output = await req.delete(`persons/${bradley.id}`);
+    assert.strictEqual(output.status, 200);
+    assert(output.data.dropped, "confirmed drop");
+  });
+});
+
 function checkSubset(actual, expected, updatedAfter = null, createdAfter = null) {
   if (createdAfter) {
     assert.exists(actual.createdAt, 'creation time');
@@ -290,4 +362,18 @@ function checkSubset(actual, expected, updatedAfter = null, createdAfter = null)
   for (const property in expected) {
     assert.deepEqual(actual[property], expected[property], `property ${property}`);
   }
+}
+
+function clearDatabase(knex) {
+  const tables = [
+    'Person',
+    'Movie',
+    'Animal',
+    'Person_Movie'
+  ];
+  const jobs = [];
+  tables.forEach(table => {
+    jobs.push(knex(table).del());
+  });
+  return Promise.all(jobs);
 }
