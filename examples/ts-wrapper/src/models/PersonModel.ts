@@ -202,7 +202,7 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
     // We don't need to check for the existence of the query parameters because
     // we call the `skipUndefined` method. It causes the query builder methods
     // to do nothing if one of the values is undefined.
-    return <Promise<Person[]>><any>this.Model.query() // TBD: fix type after typings fixed
+    return this.Model.query()
       .skipUndefined()
       // For security reasons, limit the relations that can be fetched.
       .allowEager(allow)
@@ -246,8 +246,8 @@ export class PersonModelBroker extends StampedModelBroker<PersonModel>
   }
 
   modify(personID: number, mods: Partial<PersonSpec>) {
-    return this.Model.query().patch(mods).where('id', personID).then((patchCount: any) => {
-      return (patchCount === 1); // TBD: remove 'any' type when patch type gets fixed
+    return this.Model.query().patch(mods).where('id', personID).then((patchCount) => {
+      return (patchCount === 1);
     });
   }
 

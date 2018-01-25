@@ -38,7 +38,7 @@ export interface PersonBroker extends StampedBroker<Person> {
   addPet(personID: number, pets: AnimalSpec): Promise<Animal>;
   addPets(personID: number, pets: AnimalSpec[]): Promise<Animal[]>;
   drop(personID: number): Promise<boolean>;
-  get(personID: number): Promise<Person | undefined>; // TBD: is undefined possible?
+  get(personID: number): Promise<Person | undefined>;
   // TBD: should the following return an EagerRelation<Person>[]?
   getGraph(eager: string, allow: string, filter: PersonFilter): Promise<Partial<Person>[]>;
   getPets(personID: number, filter: PetFilter): Promise<Animal[]>;

@@ -23,7 +23,7 @@
     "koa-morgan": "^1.0.1",
     "koa-router": "^7.3.0",
     "minimist": "^1.2.0",
-    "objection": "^0.9.4",
+    "objection": "^1.0.0-rc.5",
     "reflect-metadata": "^0.1.10",
     "sqlite3": "^3.1.13"
   },

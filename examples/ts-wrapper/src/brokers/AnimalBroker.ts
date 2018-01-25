@@ -15,5 +15,5 @@ export interface Animal extends BrokerObject, AnimalSpec {
 
 export interface AnimalBroker extends Broker<Animal> {
   create(animalInfo: AnimalSpec): Animal;
-  get(animalID: number): Promise<Animal | undefined>; // TBD: is undefined possible?
+  get(animalID: number): Promise<Animal | undefined>;
 }

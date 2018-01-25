@@ -13,7 +13,7 @@ export interface Movie extends BrokerObject, MovieSpec {
 
 export interface MovieBroker extends Broker<Movie> {
   create(movieInfo: MovieSpec): Movie;
-  addActor(movieID: number, actorID: number): any; // TBD: output of QB.relate() is in flux
+  addActor(movieID: number, actorID: number): Promise<Person>;
   getActors(movieID: number): Promise<Person[]>;
   get(movieID: number): Promise<Movie | undefined>; // TBD: is undefined possible?
 }
